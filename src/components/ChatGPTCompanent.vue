@@ -4,7 +4,15 @@
 			<h2>ASK A QUESTION</h2>
     </div>
     <div class="dialog-container">
-			<li class="dialog-li" :class="{ 'right-side' : msg.src === 'ai', 'left-side' : msg.src === 'user' }" v-for="msg in dialogArr" :key="msg.curtime"> {{ msg.text }}</li>
+			<li
+        class="dialog-li"
+        :class="{ 'right-side' : msg.src === 'ai',
+                  'left-side' : msg.src === 'user',
+                  'right-side error-msg' : msg.src === 'er'}"
+        v-for="msg in dialogArr"
+        :key="msg.curtime">
+        {{ msg.text }}
+      </li>
       <LoadingIndicator v-if="isLoading === true"/>
     </div>
     <div class="answer-form">
@@ -69,7 +77,7 @@ export default {
         })
         .catch(error => {
           console.error(error);
-          this.dialogArr.push({src: "ai", text: 'error, pls try again', curtime: Date.now()});
+          this.dialogArr.push({src: "er", text: 'error, pls try again', curtime: Date.now()});
           this.isLoading = false;
           
         });
@@ -141,6 +149,10 @@ export default {
 .left-side {
   margin: 5px 10px 5px auto;
   
+}
+
+.error-msg {
+  border: 2px solid red;
 }
 
 .right-side {
