@@ -7,8 +7,7 @@
 			<li
         class="dialog-li"
         :class="{ 'right-side' : msg.src === 'ai',
-                  'left-side' : msg.src === 'user',
-                  'right-side error-msg' : msg.src === 'er'}"
+                  'left-side' : msg.src === 'user'}"
         v-for="msg in dialogArr"
         :key="msg.curtime">
         {{ msg.text }}
@@ -96,6 +95,7 @@ export default {
   display: flex;
   flex-direction: row;
   margin: 0 auto;
+  margin-bottom: 100px;
   justify-content: center;
 }
 .send-btn {
