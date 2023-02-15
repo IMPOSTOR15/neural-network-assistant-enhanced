@@ -35,9 +35,10 @@ export default {
       isLoading: false,
 			questionText: '',
 			res: null,
-			dialogArr: [{src: "ai", text: "word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all;word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all;word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all;word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all;word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all;word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; ", curtime: "Date.now()"}, {src: "ai", text: "response.data.response", curtime: "Date.now()"},{src: "user", text: "response.data.response", curtime: "Date.now()"}],
-      // dialogArr: [],
-      presentMsgid: null,
+			// dialogArr: [{src: "ai", text: "word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all;word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all;word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all;word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all;word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all;word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; ", curtime: "Date.now()"}, {src: "ai", text: "response.data.response", curtime: "Date.now()"},{src: "user", text: "response.data.response", curtime: "Date.now()"}],
+      dialogArr: [],
+      parentMessageId: null,
+      conversationId: null,
       requestBody: {}
 		}
 	},
@@ -55,24 +56,28 @@ export default {
     },
 		async sendQuestion(){
       this.dialogArr.push({src: "user", text: this.questionText, curtime: Date.now()});
-      if (this.presentMsgid) {
+      if (this.parentMessageId) {
         this.requestBody = {
           message: this.questionText,
-          parentMessageId: this.presentMsgid,
+          parentMessageId: this.parentMessageId,
+          conversationId: this.conversationId
         };
+        console.log('ask with context');
       } else {
         this.requestBody = {
           message: this.questionText,
         };
+        console.log('ask without context');
       }
       this.questionText = '';
       axios.post('https://chatgptapi-dandr212.b4a.run/conversation', this.requestBody)
         .then(response => {
           console.log(response.data.response);
           this.dialogArr.push({src: "ai", text: response.data.response, curtime: Date.now()});
-          this.presentMsgid = response.data.messageId;
+          this.parentMessageId = response.data.messageId;
+          this.conversationId = response.data.conversationId
           this.isLoading = false;
-          
+          console.log(response.data);
         })
         .catch(error => {
           console.error(error);
@@ -203,6 +208,7 @@ export default {
     display: flex;
     flex-direction: row;
     margin: 0 auto;
+    margin-bottom: 50px;
     justify-content: center;
   }
   .questionInput {
