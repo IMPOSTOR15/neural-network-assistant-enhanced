@@ -6,19 +6,31 @@
     </div>
     <select-component></select-component>
   </section>
+  <disclaimerModalWindow :show="isModalShow" />
 </template>
 
 <script>
 import selectComponent from '@/components/selectComponent.vue'
+import disclaimerModalWindow from '@/components/DisclaimerComponent.vue'
 export default {
   components: {
-    selectComponent
+    selectComponent,
+    disclaimerModalWindow
   },
   data() {
     return {
-
+      isModalShow: null
     }
   },
+  created() {
+    let curShowValue = localStorage.getItem('isDisclaimerReaded');
+    console.log(curShowValue);
+    if (curShowValue) {
+      this.isModalShow = false
+    } else {
+      this.isModalShow = true
+    }
+  }
 
 }
 </script>

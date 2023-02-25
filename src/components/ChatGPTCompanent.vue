@@ -35,7 +35,6 @@ export default {
       isLoading: false,
 			questionText: '',
 			res: null,
-			// dialogArr: [{src: "ai", text: "word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all;word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all;word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all;word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all;word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all;word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; word-break: break-all; ", curtime: "Date.now()"}, {src: "ai", text: "response.data.response", curtime: "Date.now()"},{src: "user", text: "response.data.response", curtime: "Date.now()"}],
       dialogArr: [],
       parentMessageId: null,
       conversationId: null,
@@ -159,6 +158,7 @@ export default {
 .error-msg {
   border: 2px solid red;
 }
+
 
 .right-side {
   color: hsl(200, 100%, 93%);
