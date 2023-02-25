@@ -1,4 +1,4 @@
-[![browser-Uvjm-Qnjfv4.png](https://i.postimg.cc/76vYkK3f/browser-Uvjm-Qnjfv4.png)](https://postimg.cc/qtLdcXZT)
+![Logo](https://i.postimg.cc/76vYkK3f/browser-Uvjm-Qnjfv4.png)
 # Neural-network assistant
 
 This is a web application project that implements a chat with artificial intelligence (AI) using an API. The AI chatbot is designed to respond to user queries in a conversational manner and provide helpful responses.
