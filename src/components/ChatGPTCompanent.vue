@@ -10,9 +10,19 @@
                   'left-side' : msg.src === 'user'}"
         v-for="msg in dialogArr"
         :key="msg.curtime">
-        {{ msg.text }}
+        <span class="answer-text">
+          {{ msg.text }}
+        </span>
+        
       </li>
-      <LoadingIndicator v-if="isLoading === true"/>
+      <li
+        class="dialog-li right-side-loading"
+        v-if="isLoading === true"
+      >
+        <span class="answer-text loading">
+          Ai is typing message...
+        </span>
+      </li>
     </div>
     <div class="answer-form">
       <textarea class="questionInput" type="text" v-model="questionText" placeholder="Enter your question here"></textarea>
@@ -143,24 +153,39 @@ export default {
   border: 2px solid #4a5461;
   padding: 10px;
   text-align: left;
-  max-width: 90%;
+  max-width: 80%;
   list-style:none;
   border-radius: 5px;
   word-break: break-word;
+  font-size: 18px;
 
 }
-
+.answer-text {
+  white-space: pre-wrap;
+}
 .left-side {
   margin: 5px 10px 5px auto;
-  
 }
 
 .error-msg {
   border: 2px solid red;
 }
+.loading {
+  clip-path: inset(0 1.8ch 0 0);
+  animation: loading 1s steps(10) infinite;
+}
 
-
+@keyframes loading {
+  to {
+    clip-path: inset(0 -1ch 0 0)
+  }
+}
 .right-side {
+  color: hsl(200, 100%, 93%);
+  border: 2px solid hsl(200, 50%, 55%);
+  margin: 5px auto 5px 10px ;
+}
+.right-side-loading {
   color: hsl(200, 100%, 93%);
   border: none;
   margin: 5px auto 5px 10px ;
