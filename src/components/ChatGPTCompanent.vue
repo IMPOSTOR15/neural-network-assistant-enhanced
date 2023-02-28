@@ -25,7 +25,7 @@
       </li>
     </div>
     <div class="answer-form">
-      <textarea class="questionInput" type="text" v-model="questionText" placeholder="Enter your question here"></textarea>
+      <textarea class="questionInput" type="text" v-model="questionText" @keyup.enter="loadingNewAnswer" placeholder="Enter your question here"></textarea>
 			<button class="send-btn" @click="loadingNewAnswer">SEND</button>
     </div>
     
