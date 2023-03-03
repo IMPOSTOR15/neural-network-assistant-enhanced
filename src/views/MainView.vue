@@ -91,4 +91,12 @@ export default {
 
   }
 } 
+@media (max-width: 750px) {
+  .gradient-border {
+    max-width: 80%;
+  }
+  .header-title {
+    font-size: 35px;
+  }
+}
 </style>

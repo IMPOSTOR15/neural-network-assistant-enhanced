@@ -3,6 +3,7 @@
     <h2 class="choose-header">Select functional</h2>
     <div>
       <button ref="firstRippleButton" class="select-btn" @click="onClickselect" @animationend="onAnimationEnd">chatGPT</button>
+      <button ref="firstRippleButton" class="select-btn" @click="onClickselect" @animationend="onAnimationEnd">chatGPT V2</button>
       <!-- <button ref="secondRippleButton" class="select-btn" @click="onClickselect" @animationend="onAnimationEnd">Stable diffusion</button> -->
     </div>
     <div class="content">
@@ -31,6 +32,10 @@ export default {
       if (event.path[0].textContent === "Stable diffusion") {
         this.mousePositionToCustomProp(event, this.$refs.secondRippleButton);
         this.$refs.secondRippleButton.classList.add("pulse");
+      }
+      if (event.path[0].textContent === "chatGPT") {
+        this.mousePositionToCustomProp(event, this.$refs.firstRippleButton);
+        this.$refs.firstRippleButton.classList.add("pulse");
       }
       if (event.path[0].textContent === "chatGPT") {
         this.mousePositionToCustomProp(event, this.$refs.firstRippleButton);

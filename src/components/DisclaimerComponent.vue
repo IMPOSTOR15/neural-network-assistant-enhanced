@@ -169,4 +169,17 @@ input[type="checkbox"]:checked::before {
   color: #222;
 }
 
+@media (max-width: 750px) {
+  .modal-text {
+    font-size: 13px;
+  }
+  .modal-content {
+    margin: 15px;
+  }
+  .modal {
+
+    min-width: 90%;
+
+  }
+}
 </style>

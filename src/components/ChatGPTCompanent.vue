@@ -3,6 +3,10 @@
     <div class="top-div">
 			<h2>ASK A QUESTION</h2>
     </div>
+    <ScrollDialogCompanent
+      :dialogsList = 'dialogsList'
+      @selectDialog='selectCurDialog'
+    />
     <div class="dialog-container">
 			<li
         class="dialog-li"
@@ -33,60 +37,103 @@
 </template>
 
 <script>
+import ScrollDialogCompanent from '@/components/dialogsList/ScrollDialogCompanent.vue'
 import LoadingIndicator from '@/components/LoadingIndicator.vue'
 import axios from 'axios'
 
 export default {
   components: {
     LoadingIndicator,
+    ScrollDialogCompanent
   },
 	data() {
 		return {
+      curDialogIndex: 0,
       isLoading: false,
 			questionText: '',
 			res: null,
       dialogArr: [],
       parentMessageId: null,
       conversationId: null,
-      requestBody: {}
+      requestBody: {},
+      dialogsList: [{
+        title: 'new dialog',
+        dialog_id: 1,
+        dialogMessages: []
+      },]
 		}
 	},
+  created() {
+    if(localStorage.dialogsList) {
+      this.dialogsList = JSON.parse(localStorage.dialogsList);
+    }
+  },
+  watch: {
+    dialogsList() {
+      console.log('save to storage');
+      localStorage.setItem('dialogsList', JSON.stringify(this.dialogsList));
+    },
+    deep: true
+  },
 	async mounted() {
-
+    if (this.dialogsList.length != 0) {
+      this.dialogArr = this.dialogsList[this.curDialogIndex].dialogMessages
+    }
+    
 	},
 	methods: {
+    selectCurDialog(dialog_id) {
+      this.dialogsList[this.curDialogIndex].dialogMessages = this.dialogArr
+
+      this.curDialogIndex = this.dialogsList.findIndex(elem => elem.dialog_id === dialog_id)
+      this.dialogArr = this.dialogsList[this.curDialogIndex].dialogMessages
+    },
     async loadingNewAnswer() {
       if (this.questionText !== '') {
         this.isLoading = true;
-        await this.sendQuestion();
+        await this.sendQuestion(this.questionText);
       }
       
       
     },
-		async sendQuestion(){
+		async sendQuestion(questionText){
       this.dialogArr.push({src: "user", text: this.questionText, curtime: Date.now()});
-      if (this.parentMessageId) {
+      
+      if(this.dialogArr.length != 1) {
+        console.log(this.dialogArr[this.dialogArr.length-2]);
+        if (this.dialogArr[this.dialogArr.length-2].parentMessageId) {
+          this.requestBody = {
+            message: questionText,
+            parentMessageId: this.dialogArr[this.dialogArr.length-2].parentMessageId,
+            conversationId: this.dialogArr[this.dialogArr.length-2].conversationId
+          };
+          console.log('ask with context');
+        }
+      }
+      else {
         this.requestBody = {
-          message: this.questionText,
-          parentMessageId: this.parentMessageId,
-          conversationId: this.conversationId
-        };
-        console.log('ask with context');
-      } else {
-        this.requestBody = {
-          message: this.questionText,
+          message: questionText,
         };
         console.log('ask without context');
       }
       this.questionText = '';
       axios.post('https://chatgptapi-dandr212.b4a.run/conversation', this.requestBody)
         .then(response => {
-          console.log(response.data.response);
-          this.dialogArr.push({src: "ai", text: response.data.response, curtime: Date.now()});
+          // console.log(response.data.response);
+          this.dialogArr.push(
+            {
+              src: "ai",
+              text: response.data.response,
+              curtime: Date.now(),
+              parentMessageId: response.data.messageId,
+              conversationId: response.data.conversationId,
+            });
           this.parentMessageId = response.data.messageId;
           this.conversationId = response.data.conversationId
           this.isLoading = false;
-          console.log(response.data);
+          // console.log(response.data);
+          this.addTitle()
+          localStorage.setItem('dialogsList', JSON.stringify(this.dialogsList));
         })
         .catch(error => {
           console.error(error);
@@ -94,11 +141,21 @@ export default {
           this.isLoading = false;
           
         });
+        
 		},
 		addDialogHistory() {
 			this.dialogArr.push({src: "ai", text: this.res.text, curtime: Date.now()});
 			this.questionText = '';
-		}
+		},
+    async addTitle() {
+      if(this.dialogsList[this.curDialogIndex].dialogMessages.length === 2 || this.dialogsList[this.curDialogIndex].title === 'new dialog')
+        axios.post('https://chatgptapi-dandr212.b4a.run/conversation', {
+          message: 'Reduce the question to two words'+this.dialogArr[0].text,
+        })
+        .then(response => {
+          this.dialogsList[this.curDialogIndex].title = response.data.response
+        })
+    }
 	}
 }
 </script>
