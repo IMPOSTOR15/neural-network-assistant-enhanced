@@ -172,6 +172,9 @@ export default {
         try {
           const completion = await openai.createChatCompletion(this.requestBody);
           let answer = completion.data.choices[0].message.content;
+          if (answer.startsWith('\n\n')) {
+            answer = answer.slice(2);
+          }
           this.dialogArr.push({
             src: "ai",
             text: answer,
@@ -184,10 +187,10 @@ export default {
           this.isLoading = false;
           this.addTitle()
           localStorage.setItem('dialogsList', JSON.stringify(this.dialogsList));
-        } catch (err) {
-          console.error(err);
-            this.dialogArr.push({src: "er", text: 'error, pls try again or create new dialog', curtime: Date.now()});
-            this.isLoading = false;
+        } catch (error) {
+          console.error(error);
+          this.dialogArr.push({src: "er", text: 'error, pls try again or create new dialog', curtime: Date.now()});
+          this.isLoading = false;
         }
       }
       
