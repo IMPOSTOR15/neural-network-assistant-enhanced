@@ -45,6 +45,7 @@ export default {
       console.log(dialog_id);
       let del_index = this.dialogsList.findIndex(elem => elem.dialog_id === dialog_id)
       this.dialogsList.splice(del_index, 1)
+      localStorage.setItem('dialogsList', JSON.stringify(this.dialogsList));
     },
     selectDialog(dialog_id) {
       this.$emit('selectDialog', dialog_id)
