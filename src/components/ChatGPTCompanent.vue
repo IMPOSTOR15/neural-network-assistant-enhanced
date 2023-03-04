@@ -185,7 +185,7 @@ export default {
           this.addTitle()
           localStorage.setItem('dialogsList', JSON.stringify(this.dialogsList));
         } catch (err) {
-          console.error(error);
+          console.error(err);
             this.dialogArr.push({src: "er", text: 'error, pls try again or create new dialog', curtime: Date.now()});
             this.isLoading = false;
         }
