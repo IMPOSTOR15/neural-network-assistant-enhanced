@@ -2,6 +2,7 @@
   <section>
     <div class="top-div">
 			<h2>ASK A QUESTION</h2>
+      <p class="engine-text">Current engine version: {{ curEngineVersion }}</p>
     </div>
     <ScrollDialogCompanent
       :dialogsList = 'dialogsList'
@@ -41,11 +42,19 @@ import ScrollDialogCompanent from '@/components/dialogsList/ScrollDialogCompanen
 import LoadingIndicator from '@/components/LoadingIndicator.vue'
 import axios from 'axios'
 
+const { Configuration, OpenAIApi } = require("openai");
+
+const configuration = new Configuration({
+  apiKey: process.env.VUE_APP_OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(configuration);
+
 export default {
   components: {
     LoadingIndicator,
     ScrollDialogCompanent
   },
+  props: ['curEngineVersion'],
 	data() {
 		return {
       curDialogIndex: 0,
@@ -59,21 +68,21 @@ export default {
       dialogsList: [{
         title: 'new dialog',
         dialog_id: 1,
-        dialogMessages: []
-      },]
+        dialogMessages: [],
+        messagesHistory: []
+      },],
+      messages: [],
 		}
 	},
+  watch: {
+    curEngineVersion(curvalue) {
+      console.log(curvalue);
+    }
+  },
   created() {
     if(localStorage.dialogsList) {
       this.dialogsList = JSON.parse(localStorage.dialogsList);
     }
-  },
-  watch: {
-    dialogsList() {
-      console.log('save to storage');
-      localStorage.setItem('dialogsList', JSON.stringify(this.dialogsList));
-    },
-    deep: true
   },
 	async mounted() {
     if (this.dialogsList.length != 0) {
@@ -84,68 +93,106 @@ export default {
 	methods: {
     selectCurDialog(dialog_id) {
       this.dialogsList[this.curDialogIndex].dialogMessages = this.dialogArr
+      this.dialogsList[this.curDialogIndex].dialogHistory = this.dialogHistory
 
       this.curDialogIndex = this.dialogsList.findIndex(elem => elem.dialog_id === dialog_id)
+
       this.dialogArr = this.dialogsList[this.curDialogIndex].dialogMessages
+      if (this.dialogsList[this.curDialogIndex].dialogHistory) {
+        this.messages =this.dialogsList[this.curDialogIndex].dialogHistory
+      } else {
+        this.messages = []
+      }
+      
     },
     async loadingNewAnswer() {
       if (this.questionText !== '') {
         this.isLoading = true;
         await this.sendQuestion(this.questionText);
       }
-      
-      
     },
 		async sendQuestion(questionText){
       this.dialogArr.push({src: "user", text: this.questionText, curtime: Date.now()});
-      
-      if(this.dialogArr.length != 1) {
-        console.log(this.dialogArr[this.dialogArr.length-2]);
-        if (this.dialogArr[this.dialogArr.length-2].parentMessageId) {
+      if (this.curEngineVersion === "chatGPT") {
+        if(this.dialogArr.length != 1) {
+          console.log(this.dialogArr[this.dialogArr.length-2]);
+          if (this.dialogArr[this.dialogArr.length-2].parentMessageId) {
+            this.requestBody = {
+              message: questionText,
+              parentMessageId: this.dialogArr[this.dialogArr.length-2].parentMessageId,
+              conversationId: this.dialogArr[this.dialogArr.length-2].conversationId
+            };
+            console.log('ask with context');
+          }
+        }
+        else {
           this.requestBody = {
             message: questionText,
-            parentMessageId: this.dialogArr[this.dialogArr.length-2].parentMessageId,
-            conversationId: this.dialogArr[this.dialogArr.length-2].conversationId
           };
-          console.log('ask with context');
+          console.log('ask without context');
         }
+        this.questionText = '';
+        axios.post('https://chatgptapi-dandr212.b4a.run/conversation', this.requestBody)
+          .then(response => {
+            this.dialogArr.push(
+              {
+                src: "ai",
+                text: response.data.response,
+                curtime: Date.now(),
+                parentMessageId: response.data.messageId,
+                conversationId: response.data.conversationId,
+              });
+            this.parentMessageId = response.data.messageId;
+            this.conversationId = response.data.conversationId
+            this.isLoading = false;
+            // console.log(response.data);
+            this.addTitle()
+            localStorage.setItem('dialogsList', JSON.stringify(this.dialogsList));
+          })
+          .catch(error => {
+            console.error(error);
+            this.dialogArr.push({src: "er", text: 'error, pls try again or create new dialog', curtime: Date.now()});
+            this.isLoading = false;
+            
+          });
       }
-      else {
+      if (this.curEngineVersion === "chatGPT V2") {
+        console.log('this.messages: ', this.messages);
+        this.messages.push(
+          {
+            "role": "user",
+            "content": questionText
+          }
+        )
         this.requestBody = {
-          message: questionText,
-        };
-        console.log('ask without context');
-      }
-      this.questionText = '';
-      axios.post('https://chatgptapi-dandr212.b4a.run/conversation', this.requestBody)
-        .then(response => {
-          // console.log(response.data.response);
-          this.dialogArr.push(
-            {
-              src: "ai",
-              text: response.data.response,
-              curtime: Date.now(),
-              parentMessageId: response.data.messageId,
-              conversationId: response.data.conversationId,
-            });
-          this.parentMessageId = response.data.messageId;
-          this.conversationId = response.data.conversationId
+          model: 'gpt-3.5-turbo',
+          messages: this.messages,
+        }
+        this.questionText = '';
+        try {
+          const completion = await openai.createChatCompletion(this.requestBody);
+          let answer = completion.data.choices[0].message.content;
+          this.dialogArr.push({
+            src: "ai",
+            text: answer,
+            curtime: Date.now(),
+          });
+          this.messages.push({
+            "role": "assistant",
+            "content": answer,
+          })
           this.isLoading = false;
-          // console.log(response.data);
           this.addTitle()
           localStorage.setItem('dialogsList', JSON.stringify(this.dialogsList));
-        })
-        .catch(error => {
+        } catch (err) {
           console.error(error);
-          this.dialogArr.push({src: "er", text: 'error, pls try again', curtime: Date.now()});
-          this.isLoading = false;
-          
-        });
+            this.dialogArr.push({src: "er", text: 'error, pls try again or create new dialog', curtime: Date.now()});
+            this.isLoading = false;
+        }
+      }
+      
+      
         
-		},
-		addDialogHistory() {
-			this.dialogArr.push({src: "ai", text: this.res.text, curtime: Date.now()});
-			this.questionText = '';
 		},
     async addTitle() {
       if(this.dialogsList[this.curDialogIndex].dialogMessages.length === 2 || this.dialogsList[this.curDialogIndex].title === 'new dialog')
@@ -154,6 +201,7 @@ export default {
         })
         .then(response => {
           this.dialogsList[this.curDialogIndex].title = response.data.response
+          localStorage.setItem('dialogsList', JSON.stringify(this.dialogsList));
         })
     }
 	}
@@ -168,6 +216,9 @@ export default {
   margin: 0 auto;
   margin-bottom: 100px;
   justify-content: center;
+}
+.engine-text {
+  color: #fff;
 }
 .send-btn {
   background: transparent;

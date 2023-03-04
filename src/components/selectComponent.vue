@@ -3,49 +3,54 @@
     <h2 class="choose-header">Select functional</h2>
     <div>
       <button ref="firstRippleButton" class="select-btn" @click="onClickselect" @animationend="onAnimationEnd">chatGPT</button>
-      <button ref="firstRippleButton" class="select-btn" @click="onClickselect" @animationend="onAnimationEnd">chatGPT V2</button>
+      <button ref="secondRippleButton" class="select-btn" @click="onClickselect" @animationend="onAnimationEnd">chatGPT V2</button>
       <!-- <button ref="secondRippleButton" class="select-btn" @click="onClickselect" @animationend="onAnimationEnd">Stable diffusion</button> -->
     </div>
+    
     <div class="content">
-      <ChatGPT/>
+      <ChatGPT :curEngineVersion="currentChatModel"/>
     </div>
   </section>
 </template>
 
 <script>
 import ChatGPT from '@/components/ChatGPTCompanent.vue'
+import ChatGPTV2 from '@/components/ChatGPTV2Companent.vue'
 // import StableDiffusion from './StableDiffusion.vue';
 export default {
   components: {
     ChatGPT,
+    ChatGPTV2,
 
   },
   data() {
     return {
       rippleButton: null,
+      currentChatModel: 'chatGPT'
     }
   },
   mounted() {
   },
   methods: {
     onClickselect(event) {
-      if (event.path[0].textContent === "Stable diffusion") {
+      // console.log(event.path[0].textContent);
+      if (event.path[0].textContent === "chatGPT V2") {
         this.mousePositionToCustomProp(event, this.$refs.secondRippleButton);
         this.$refs.secondRippleButton.classList.add("pulse");
+        this.currentChatModel = "chatGPT V2"
+        // console.log('this.currentChatModel: ', this.currentChatModel);
       }
       if (event.path[0].textContent === "chatGPT") {
         this.mousePositionToCustomProp(event, this.$refs.firstRippleButton);
         this.$refs.firstRippleButton.classList.add("pulse");
-      }
-      if (event.path[0].textContent === "chatGPT") {
-        this.mousePositionToCustomProp(event, this.$refs.firstRippleButton);
-        this.$refs.firstRippleButton.classList.add("pulse");
+        this.currentChatModel = "chatGPT"
+        // console.log('this.currentChatModel: ', this.currentChatModel);
       }
       
       
     },
     onAnimationEnd(event) {
-      if (event.path[0].textContent === "Stable diffusion") {
+      if (event.path[0].textContent === "chatGPT V2") {
         this.$refs.secondRippleButton.classList.remove("pulse");
       }
       if (event.path[0].textContent === "chatGPT") {
@@ -100,7 +105,6 @@ export default {
   background: #fff;
   opacity: 0.5;
 }
-
 .pulse::before {
   animation: pulse 500ms;
 }
