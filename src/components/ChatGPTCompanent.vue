@@ -53,8 +53,6 @@ if(localStorage.OPENAIApiKey) {
   configuration = new Configuration({
     apiKey: localStorage.OPENAIApiKey,
   });
-} else {
-  alert('troubles with apikey')
 }
 
 
