@@ -29,6 +29,15 @@ export default {
 
     }
   },
+  mounted() {
+    if(!this.dialogsList) {
+      this.dialogsList.push({
+        title: 'new dialog',
+        dialog_id: 0,
+        dialogMessages: []
+      })
+    }
+  },
   methods: {
     addNewDialog(){
       if (this.dialogsList.length === 0 || this.dialogsList[this.dialogsList.length - 1].title !== 'new dialog') {
@@ -37,7 +46,8 @@ export default {
           dialog_id: this.dialogsList.length + 1,
           dialogMessages: []
         })
-        console.log(this.dialogsList);
+        // console.log(this.dialogsList);
+        localStorage.setItem('dialogsList', JSON.stringify(this.dialogsList));
       }
 
     },

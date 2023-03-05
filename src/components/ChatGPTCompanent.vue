@@ -43,10 +43,21 @@ import LoadingIndicator from '@/components/LoadingIndicator.vue'
 import axios from 'axios'
 
 const { Configuration, OpenAIApi } = require("openai");
+var configuration = null
+// else {
+//   configuration = new Configuration({
+//     apiKey: process.env.VUE_APP_OPENAI_API_KEY,
+//   });
+// }
+if(localStorage.OPENAIApiKey) {
+  configuration = new Configuration({
+    apiKey: localStorage.OPENAIApiKey,
+  });
+} else {
+  alert('troubles with apikey')
+}
 
-const configuration = new Configuration({
-  apiKey: process.env.VUE_APP_OPENAI_API_KEY,
-});
+
 const openai = new OpenAIApi(configuration);
 
 export default {
@@ -65,6 +76,7 @@ export default {
       parentMessageId: null,
       conversationId: null,
       requestBody: {},
+      isError: false,
       dialogsList: [{
         title: 'new dialog',
         dialog_id: 1,
@@ -83,6 +95,7 @@ export default {
     if(localStorage.dialogsList) {
       this.dialogsList = JSON.parse(localStorage.dialogsList);
     }
+    
   },
 	async mounted() {
     if (this.dialogsList.length != 0) {
@@ -198,14 +211,41 @@ export default {
         
 		},
     async addTitle() {
-      if(this.dialogsList[this.curDialogIndex].dialogMessages.length === 2 || this.dialogsList[this.curDialogIndex].title === 'new dialog')
-        axios.post('https://chatgptapi-dandr212.b4a.run/conversation', {
-          message: 'Reduce the question to two words'+this.dialogArr[0].text,
-        })
-        .then(response => {
-          this.dialogsList[this.curDialogIndex].title = response.data.response
-          localStorage.setItem('dialogsList', JSON.stringify(this.dialogsList));
-        })
+      if(this.dialogsList[this.curDialogIndex].dialogMessages.length === 2 || this.dialogsList[this.curDialogIndex].title.startsWith('dialog')) {
+        // axios.post('https://chatgptapi-dandr212.b4a.run/conversation', {
+        //   message: 'Reduce the text to two words'+this.dialogArr[0].text,
+        // })
+        // .then(response => {
+        //   this.dialogsList[this.curDialogIndex].title = response.data.response
+        //   localStorage.setItem('dialogsList', JSON.stringify(this.dialogsList));
+        // })
+        // .catch(error => {
+        //   console.error(error);
+        //   this.dialogsList[this.curDialogIndex].title = `dialog ${this.dialogsList.length}`
+        //   localStorage.setItem('dialogsList', JSON.stringify(this.dialogsList));
+        //   this.isError = true
+        // });
+        // if(this.isError) {
+          try {
+            console.log('try set new title');
+            const response = await openai.createCompletion({
+              model: "text-davinci-003",
+              prompt: 'Reduce the text to two words'+this.dialogArr[0].text,
+            });
+
+            this.dialogsList[this.curDialogIndex].title = response.data.choices[0].text.replaceAll('\n', '')
+            console.log('Add new dialog title: ', this.dialogsList[this.curDialogIndex].title);
+            localStorage.setItem('dialogsList', JSON.stringify(this.dialogsList));
+            this.isError = false
+          } catch (error) {
+
+            console.error(error);
+            this.dialogsList[this.curDialogIndex].title = `dialog ${this.dialogsList.length}`
+            localStorage.setItem('dialogsList', JSON.stringify(this.dialogsList));
+
+          };
+        // } 
+      }
     }
 	}
 }
